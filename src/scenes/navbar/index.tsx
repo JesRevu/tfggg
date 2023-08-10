@@ -24,6 +24,7 @@ const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage, setUser, ...props 
   const navbarBackground = isTopOfPage ? "" : "bg-primary-100 drop-shadow";
   
   const handleSignOut = () => {
+    localStorage.removeItem("googleUser");
     signOut(auth)
       .then(() => {
         console.log('Usuario desconectado');
@@ -58,12 +59,12 @@ const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage, setUser, ...props 
                     setSelectedPage={setSelectedPage}
                   />
                   <Link
-                    page="Estadísticas"
+                    page="Estadisticas"
                     selectedPage={selectedPage}
                     setSelectedPage={setSelectedPage}
                   />
                   <Link
-                    page="Contact Us"
+                    page="Analizador Automatico"
                     selectedPage={selectedPage}
                     setSelectedPage={setSelectedPage}
                   />
@@ -107,12 +108,12 @@ const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage, setUser, ...props 
               setSelectedPage={setSelectedPage}
             />
             <Link
-              page="Estadísticas"
+              page="Estadisticas"
               selectedPage={selectedPage}
               setSelectedPage={setSelectedPage}
             />
             <Link
-              page="Contact Us"
+              page="Analizador Automatico"
               selectedPage={selectedPage}
               setSelectedPage={setSelectedPage}
             />

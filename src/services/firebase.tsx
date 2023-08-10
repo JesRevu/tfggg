@@ -2,12 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signOut } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCHLwFEH8vOn3e1isXHzte65_oq29J8dqY",
-  authDomain: "signin-9acc0.firebaseapp.com",
-  projectId: "signin-9acc0",
-  storageBucket: "signin-9acc0.appspot.com",
-  messagingSenderId: "1022492160441",
-  appId: "1:1022492160441:web:2987112988f0546c2c4668"
+  apiKey: "AIzaSyB7FEJeZh2LO_vND6UYe11kRO2PHNvYZn8",
+  authDomain: "composite-shard-372515.firebaseapp.com",
+  projectId: "composite-shard-372515",
+  storageBucket: "composite-shard-372515.appspot.com",
+  messagingSenderId: "549283482423",
+  appId: "1:549283482423:web:ceb9e3b8d75f922755a8b2",
+  measurementId: "G-NP4EDCNS5Y"
 };
 
 const app = initializeApp(firebaseConfig);

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { GoogleLogo } from "phosphor-react";
 
 import { signInWithPopup, GoogleAuthProvider, User } from "firebase/auth";
 import { auth } from '../../services/firebase';
 
 import './styles.scss';
+import logoImage  from "@/assets/Logo.png";
 
 
 interface LocalUser {
@@ -19,29 +20,48 @@ interface SignInProps {
 
 export function SignIn({ onLogin }: SignInProps) {
   const [user, setUser] = useState<User>({} as User);
+  
 
   function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
+
+  
+
+    provider.addScope('https://www.googleapis.com/auth/calendar.readonly');
 
     signInWithPopup(auth, provider)
       .then((result) => {
         console.log(result);
         setUser(result.user);
-        onLogin(result.user); // Llama a onLogin aquí
+        onLogin(result.user);
+        localStorage.setItem("googleUser", JSON.stringify(result));
+
+        
+        
       }).catch((error) => {
         console.log(error);
       });
+
+    
   }
+
+  const googleUserString = localStorage.getItem("googleUser");
+  if (googleUserString) {
+    const googleUser = JSON.parse(googleUserString);
+    onLogin(googleUser.user);
+  }
+
 
   return (
     <div className="container">
 
-      <div className="user">
-        {user.photoURL && <img src={user.photoURL} alt="Foto de usuario" />}
-
-        <strong>{user.displayName}</strong>
-        <small>{user.email}</small>
-      </div>
+    <div className="flex justify-center items-center">
+      <img
+        src={logoImage} // Ruta de la imagen de tu logo
+        alt="Logo"
+        className="w-40 h-40 object-contain" // Ajusta el tamaño y estilo según tus necesidades
+      />
+    </div>
 
       <h1>Accede a tu cuenta</h1>
 
