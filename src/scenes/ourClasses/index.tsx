@@ -9,6 +9,7 @@ import HText from "@/shared/HText";
 import Class from "./Class";
 import { useEffect, useState } from "react";
 import { format } from 'date-fns';
+import { logOutReload } from "@/shared/helper";
 
 type Props = {
   setSelectedPage: (value: SelectedPage) => void;
@@ -50,7 +51,7 @@ const Estadisticas = ({ setSelectedPage }: Props) => {
     })
       .then(response => response.json())
       .then(data => setEvents(data))
-      .catch(error => console.error('Error fetching events:', error)); //localstroage.removeItem("googleUser"), location.reload(recargar pagina)
+      .catch(logOutReload); 
 
          // Realizar solicitud al backend para obtener las stats
     fetch('http://localhost:8080/app/stats', {
@@ -60,7 +61,7 @@ const Estadisticas = ({ setSelectedPage }: Props) => {
     })
       .then(response => response.json())
       .then(data => setStats(data))
-      .catch(error => console.error('Error fetching events:', error));
+      .catch(logOutReload);
      
       // Realizar solicitud al backend para obtener el numero total de eventos
       fetch('http://localhost:8080/app/eventsThisMonth', {
@@ -70,7 +71,7 @@ const Estadisticas = ({ setSelectedPage }: Props) => {
       })
         .then(response => response.json())
         .then(data => setNumberEvents(data))
-        .catch(error => console.error('Error fetching events:', error));
+        .catch(logOutReload);
 
         // Realizar solicitud al backend para obtener el numero total de eventos
       fetch('http://localhost:8080/app/averageEventDuration', {
@@ -80,7 +81,7 @@ const Estadisticas = ({ setSelectedPage }: Props) => {
       })
         .then(response => response.json())
         .then(data => setaverageDuration(data))
-        .catch(error => console.error('Error fetching events:', error));
+        .catch(logOutReload);
     
   }, []);
 

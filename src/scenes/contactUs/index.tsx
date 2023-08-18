@@ -3,27 +3,69 @@ import { SelectedPage } from "@/shared/types";
 import { motion } from "framer-motion";
 import ContactUsPageGraphic from "@/assets/ContactUsPageGraphic.png";
 import HText from "@/shared/HText";
-import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useEffect, useState } from "react";
+import { logOutReload } from "@/shared/helper";
 
 type Props = {
   setSelectedPage: (value: SelectedPage) => void;
+};
+
+type Stat = {
+  occupancyPercentage: number; // Asegúrate de que esta propiedad exista en los datos del evento
+  freePercentage: number;
 };
 
 const AnalizadorAuto = ({ setSelectedPage }: Props) => {
   const inputStyles = `mb-5 w-full rounded-lg bg-primary-300
   px-5 py-3 placeholder-white`;
 
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [hoursOfWork, setHoursOfWork] = useState<number | null>(null);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [startOfWork, setStartOfWork] = useState<string>('');
+  const [endOfWork, setEndOfWork] = useState<string>('');
+  const [stats, setStats] = useState<Stat>({ occupancyPercentage: 0, freePercentage: 0 }); // Estado para almacenar los eventos
+  const [popupVisible, setPopupVisible] = useState(false);
+  
 
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const googleUserString = localStorage.getItem("googleUser");
+    const googleUser = JSON.parse(googleUserString || "");
+    const accessToken = googleUser._tokenResponse.oauthAccessToken;
+
+    const requestData = {
+      startDate,
+      endDate,
+      startTime: startOfWork,
+      endTime: endOfWork,
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/app/calendar", {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json', // Especificar el tipo de contenido JSON
+        },
+        body: JSON.stringify(requestData), // Convertir el objeto en una cadena JSON
+      });
+
+      if (!response.ok) {
+        // Manejar errores de respuesta aquí
+        throw new Error("Error en la solicitud");
+      }
+
+      const data = await response.json();
+      setStats(data);
+      setPopupVisible(true); // Mostrar el popup
+
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+    }
     
-      e.preventDefault();
   };
 
   return (
@@ -72,7 +114,7 @@ const AnalizadorAuto = ({ setSelectedPage }: Props) => {
             }}
           >
             <form
-              onSubmit={onSubmit}
+              onSubmit={handleSubmit}
               action="" // llamar a un metodo del backend y pasarle las cosas
               method="POST"
             >
@@ -82,15 +124,15 @@ const AnalizadorAuto = ({ setSelectedPage }: Props) => {
             </label>
             <div className="flex gap-4">
             <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
+              selected={startDate !== '' ? new Date(startDate) : null}
+              onChange={(date) => setStartDate(date?.toISOString() || '')}
               placeholderText="Select Start Date"
               className={inputStyles}
             />
 
             <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
+              selected={endDate !== '' ? new Date(endDate) : null}
+              onChange={(date) => setEndDate(date?.toISOString() || '')}
               placeholderText="Select End Date"
               className={inputStyles}
             />
@@ -108,20 +150,17 @@ const AnalizadorAuto = ({ setSelectedPage }: Props) => {
             className={`w-32 ${inputStyles}`}
           />
         </div>
-          <div className="mb-5">
-            <label htmlFor="hoursOfWork" className="block mb-2">
-              Horas habituales de trabajo:
-            </label>
-            <input
-              type="number"
-              id="hoursOfWork"
-              placeholder="Horas"
-              value={hoursOfWork !== null ? hoursOfWork.toString() : ''}
-              onChange={(e) => setHoursOfWork(Number(e.target.value))}
-              className={`w-32 ${inputStyles}`}
-              min={0} // Restringir a números negativos
-              max={24}  // Restringir a un máximo de 24
-            />
+        <div className="mb-5">
+          <label htmlFor="startOfWork" className="block mb-2">
+            Hora de fin de la jornada laboral:
+          </label>
+          <input
+            type="time"
+            id="endOfWork"
+            value={endOfWork}
+            onChange={(e) => setEndOfWork(e.target.value)}
+            className={`w-32 ${inputStyles}`}
+          />
           </div>
               
           <div className="flex justify-center items-center">
@@ -135,25 +174,42 @@ const AnalizadorAuto = ({ setSelectedPage }: Props) => {
             </form>
           </motion.div>
 
-      <motion.div
-        className="relative mt-16 basis-2/5 md:mt-0"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        variants={{
-          hidden: { opacity: 0, y: 50 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <div className="w-full before:absolute before:-bottom-20 before:-right-10 before:z-[-1] md:before:content-evolvetext">
-          <img
-            className="w-full"
-            alt="contact-us-page-graphic"
-            src={ContactUsPageGraphic}
-          />
-        </div>
-      </motion.div>
+          <motion.div
+  className="relative mt-16 basis-2/5 md:mt-0"
+  initial={{ opacity: 0, y: 50 }}
+  animate={{ opacity: 1, y: 0 }}
+  variants={{
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 },
+  }}
+  transition={{ delay: 0.2, duration: 0.5 }}
+>
+  <div className="w-full before:absolute before:-bottom-20 before:-right-10 before:z-[-1] md:before:content-evolvetext">
+    <img
+      className="w-full"
+      alt="contact-us-page-graphic"
+      src={ContactUsPageGraphic}
+    />
+    {popupVisible && (
+      <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-opacity-70 backdrop-blur-md">
+  <div className="bg-white rounded-lg p-5 max-w-md">
+    <h2 className="text-2xl font-semibold mb-3">Resultados del Análisis:</h2>
+    <p className="mb-2">Ocupación: {stats?.occupancyPercentage.toFixed(2)}%</p>
+    <p>Libre: {stats?.freePercentage.toFixed(2)}%</p>
+    <div className="mt-auto flex justify-center">
+    <button
+      onClick={() => setPopupVisible(false)}
+      className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition duration-300"
+    >
+      Cerrar
+    </button>
+    </div>
+  </div>
+</div>
+    )}
+  </div>
+</motion.div>
+
     </div>
 
       </motion.div>
